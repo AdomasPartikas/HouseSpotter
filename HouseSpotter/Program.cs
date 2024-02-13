@@ -1,7 +1,11 @@
+using HouseSpotter.Utils;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddSingleton<ScraperClient>();
 
 var app = builder.Build();
 
@@ -23,3 +27,5 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 app.Run();
+
+
