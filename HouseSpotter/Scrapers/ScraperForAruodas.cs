@@ -58,7 +58,7 @@ namespace HouseSpotter.Scrapers
                     }
                     catch(Exception ex)
                     {
-                        _logger.LogError($"[{DateTimeOffset.Now}] PuppeteerSharp failed");
+                        _logger.LogError(ex,$"[{DateTimeOffset.Now}] PuppeteerSharp failed");
                         Debug.WriteLine($"[{DateTimeOffset.Now}] Stopping the scraper for Aruodas");
                         return;
                     }

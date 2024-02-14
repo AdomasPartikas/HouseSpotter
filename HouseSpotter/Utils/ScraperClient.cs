@@ -10,6 +10,27 @@ namespace HouseSpotter.Utils
     public class ScraperClient
     {
         private readonly IConfiguration _configuration;
+
+        ~ScraperClient()
+        {
+            if (PuppeeteerBrowser != null)
+            {
+                PuppeeteerBrowser.CloseAsync().Wait();
+            }
+            if(SqlConnection != null)
+            {
+                SqlConnection.Close();
+            }
+            if(Client != null)
+            {
+                Client.Dispose();
+            }
+            if(PuppeteerPage != null)
+            {
+                PuppeteerPage.CloseAsync().Wait();
+            }
+            GC.Collect();
+        }
         public ScraperClient(IConfiguration configuration)
         {
             _configuration = configuration;
