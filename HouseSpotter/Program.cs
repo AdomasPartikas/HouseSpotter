@@ -1,3 +1,4 @@
+using HouseSpotter.Scrapers;
 using HouseSpotter.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 builder.Services.AddSingleton<ScraperClient>();
+builder.Services.AddScoped<ScraperForAruodas>();
 
 var app = builder.Build();
 

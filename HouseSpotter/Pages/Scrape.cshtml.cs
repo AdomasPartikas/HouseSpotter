@@ -13,25 +13,26 @@ namespace HouseSpotter.Pages
     {
         private readonly ILogger<ScrapeModel> _logger;
         private readonly ScraperClient _scraperClient;
-        public ScrapeModel(ILogger<ScrapeModel> logger, ScraperClient scraperClient)
+        private readonly ScraperForAruodas _scraperForAruodas;
+        public ScrapeModel(ILogger<ScrapeModel> logger, ScraperClient scraperClient, ScraperForAruodas scraperForAruodas)
         {
             _logger = logger;
             _scraperClient = scraperClient;
+            _scraperForAruodas = scraperForAruodas;
         }
         public async Task OnGetAsync()
         {
             _logger.LogInformation($"[{DateTimeOffset.Now}] Scrape started");
             try
             {
-                var aruodasScraper = new ScraperForAruodas(_scraperClient);
-                await aruodasScraper.FindApartaments("butai");
-                await aruodasScraper.FindApartaments("butu-nuoma");
-                _logger.LogInformation($"[{DateTimeOffset.Now}] Scrape completed successfully");
+                await _scraperForAruodas.FindApartaments("butai");
+                await _scraperForAruodas.FindApartaments("butu-nuoma");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[{DateTimeOffset.Now}] Error occurred during web scraping");
+                _logger.LogError(ex, $"[{DateTimeOffset.Now}] Unknown error occurred during web scraping");
             }
+            _logger.LogInformation($"[{DateTimeOffset.Now}] Scrape finished");
         }
     }
 }
