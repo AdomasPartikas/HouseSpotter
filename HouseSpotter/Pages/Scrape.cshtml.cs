@@ -25,10 +25,10 @@ namespace HouseSpotter.Pages
             _logger.LogInformation($"[{DateTimeOffset.Now}] Scrape started");
             try
             {
-                await _scraperForAruodas.FindApartaments("namai");
-                await _scraperForAruodas.FindApartaments("namu-nuoma");
-                await _scraperForAruodas.FindApartaments("butai");
-                await _scraperForAruodas.FindApartaments("butu-nuoma");
+                await _scraperForAruodas.FindHousing("namai");
+                await _scraperForAruodas.FindHousing("namu-nuoma");
+                await _scraperForAruodas.FindHousing("butai");
+                await _scraperForAruodas.FindHousing("butu-nuoma");
 
                 await _scraperClient.EndScrape();
                 GC.Collect();

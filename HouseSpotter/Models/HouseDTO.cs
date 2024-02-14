@@ -6,8 +6,8 @@ namespace HouseSpotter.Models
         public string? Link { get; set; }
         public string? BustoTipas { get; set; }
         public string? Title { get; set; }
-        public int Kaina { get; set; }
-        public int KainaMen { get; set; }
+        public double Kaina { get; set; }
+        public double KainaMen { get; set; }
         public string? NamoNumeris { get; set; }
         public string? ButoNumeris { get; set; }
         public int KambariuSk { get; set; }

@@ -16,7 +16,70 @@ namespace HouseSpotter.Scrapers
             _scrapperClient = scraperClient;
             _logger = logger;
         }
-        public async Task FindApartaments(string siteEndpoint)
+        ~ScraperForAruodas()
+        {
+            _scrapperClient.EndScrape().Wait();
+        }
+        public async Task GetHousingDetails(string url)
+        {
+            Thread.Sleep((int)_scrapperClient.SpeedLimit!); //Stopping to not get flagged as a robot
+
+            string html = "";
+            var doc = new HtmlDocument();
+
+            var house = new HouseDTO();
+
+            try
+            {
+                Debug.WriteLine($"[{DateTimeOffset.Now}] Trying HtmlClient");
+
+                if(!_scrapperClient.HtmlClientInitialized)
+                {
+                    await _scrapperClient.InitializeHtmlClient();
+                }
+                html = await _scrapperClient.HtmlClient.GetStringAsync(url);
+            }
+            catch (HttpRequestException e)
+            {
+                Debug.WriteLine($"[{DateTimeOffset.Now}] HtmlClient failed");
+
+                try
+                {
+                    Debug.WriteLine($"[{DateTimeOffset.Now}] Trying PuppeteerSharp");
+
+                    if (!_scrapperClient.PuppeteerInitialized)
+                    {
+                        await _scrapperClient.InitializePupeeter();
+                        await _scrapperClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
+                        Thread.Sleep(125);
+                    }
+                    
+                    await _scrapperClient.PuppeteerPage!.GoToAsync(url);
+                    html = await _scrapperClient.PuppeteerPage!.GetContentAsync();
+                }
+                catch(Exception ex)
+                {
+                    Debug.WriteLine($"[{DateTimeOffset.Now}] PuppeteerSharp failed");
+                    _logger.LogCritical(ex, $"[{DateTimeOffset.Now}] Both HtmlClient and PuppeteerSharp failed to get {url}");
+                    return;
+                }
+            }
+
+            doc.LoadHtml(html);
+
+            var header = doc.DocumentNode.Descendants("div")
+                   .Where(node => node.GetAttributeValue("class", "")
+                    .Equals("advert-info-header")).ToList();
+            
+            var title = header[1].Descendants("h1").FirstOrDefault()!.InnerText.Trim();
+            var price = Convert.ToDouble(header[1].Descendants("span").FirstOrDefault()!.InnerText.TrimEnd('€').Trim().Replace(" ", ""));
+
+            house.Link = url;
+            house.Title = title;
+            house.Kaina = price;
+            
+        }
+        public async Task FindHousing(string siteEndpoint)
         {
             Debug.WriteLine($"[{DateTimeOffset.Now}] Running FindApartaments for Aruodas with {siteEndpoint} endpoint");
 
@@ -120,11 +183,12 @@ namespace HouseSpotter.Scrapers
                     {
                         var text = "\nhttps://m.aruodas.lt/" + tip.GetAttributeValue("href", "");
                         SaveResult(false, text);
+                        await GetHousingDetails(text); //For testing purposes
                     }
                 }
 
                 Debug.WriteLine($"[{DateTimeOffset.Now}] <{i}/{pageCount}> Total queries made so far: {_scrapperClient.Queries} in /{siteEndpoint}/");
-                return;
+                return; //For testing purposes
             }
         }
         public void SaveResult(bool savingDto, object result)
