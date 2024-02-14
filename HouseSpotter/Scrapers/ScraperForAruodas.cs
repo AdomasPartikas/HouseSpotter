@@ -36,11 +36,17 @@ namespace HouseSpotter.Scrapers
 
                 try
                 {
-                    html = await _scrapperClient.Client.GetStringAsync(pageUrl);
+                    Debug.WriteLine($"[{DateTimeOffset.Now}] Trying HtmlClient");
+
+                    if(!_scrapperClient.HtmlClientInitialized)
+                    {
+                        await _scrapperClient.InitializeHtmlClient();
+                    }
+                    html = await _scrapperClient.HtmlClient.GetStringAsync(pageUrl);
                 }
                 catch (HttpRequestException e)
                 {
-                    _logger.LogError($"[{DateTimeOffset.Now}] HtmlClient was flagged");
+                    Debug.WriteLine($"[{DateTimeOffset.Now}] HtmlClient failed");
 
                     try
                     {
@@ -58,8 +64,8 @@ namespace HouseSpotter.Scrapers
                     }
                     catch(Exception ex)
                     {
-                        _logger.LogError(ex,$"[{DateTimeOffset.Now}] PuppeteerSharp failed");
-                        Debug.WriteLine($"[{DateTimeOffset.Now}] Stopping the scraper for Aruodas");
+                        Debug.WriteLine($"[{DateTimeOffset.Now}] PuppeteerSharp failed");
+                        _logger.LogCritical(ex, $"[{DateTimeOffset.Now}] Both HtmlClient and PuppeteerSharp failed to get {pageUrl}");
                         return;
                     }
                 }
@@ -117,7 +123,8 @@ namespace HouseSpotter.Scrapers
                     }
                 }
 
-                Debug.WriteLine($"[{DateTimeOffset.Now}] <{i}/{pageCount}> Total queries made so far: {_scrapperClient.Queries}");
+                Debug.WriteLine($"[{DateTimeOffset.Now}] <{i}/{pageCount}> Total queries made so far: {_scrapperClient.Queries} in /{siteEndpoint}/");
+                return;
             }
         }
         public void SaveResult(bool savingDto, object result)
