@@ -33,11 +33,11 @@ namespace HouseSpotter.Scrapers
             {
                 Debug.WriteLine($"[{DateTimeOffset.Now}] Trying HtmlClient");
 
-                if(!_scrapperClient.HtmlClientInitialized)
+                if(!_scrapperClient.NetworkHttpClient.HtmlClientInitialized)
                 {
-                    await _scrapperClient.InitializeHtmlClient();
+                    await _scrapperClient.NetworkHttpClient.Initialize();
                 }
-                html = await _scrapperClient.HtmlClient.GetStringAsync(url);
+                html = await _scrapperClient.NetworkHttpClient.HtmlClient.GetStringAsync(url);
             }
             catch (HttpRequestException e)
             {
@@ -47,15 +47,15 @@ namespace HouseSpotter.Scrapers
                 {
                     Debug.WriteLine($"[{DateTimeOffset.Now}] Trying PuppeteerSharp");
 
-                    if (!_scrapperClient.PuppeteerInitialized)
+                    if (!_scrapperClient.NetworkPuppeteerClient.PuppeteerInitialized)
                     {
-                        await _scrapperClient.InitializePupeeter();
-                        await _scrapperClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
+                        await _scrapperClient.NetworkPuppeteerClient.Initialize();
+                        await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
                         Thread.Sleep(125);
                     }
                     
-                    await _scrapperClient.PuppeteerPage!.GoToAsync(url);
-                    html = await _scrapperClient.PuppeteerPage!.GetContentAsync();
+                    await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GoToAsync(url);
+                    html = await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GetContentAsync();
                 }
                 catch(Exception ex)
                 {
@@ -101,11 +101,11 @@ namespace HouseSpotter.Scrapers
                 {
                     Debug.WriteLine($"[{DateTimeOffset.Now}] Trying HtmlClient");
 
-                    if(!_scrapperClient.HtmlClientInitialized)
+                    if(!_scrapperClient.NetworkHttpClient.HtmlClientInitialized)
                     {
-                        await _scrapperClient.InitializeHtmlClient();
+                        await _scrapperClient.NetworkHttpClient.Initialize();
                     }
-                    html = await _scrapperClient.HtmlClient.GetStringAsync(pageUrl);
+                    html = await _scrapperClient.NetworkHttpClient.HtmlClient.GetStringAsync(pageUrl);
                 }
                 catch (HttpRequestException e)
                 {
@@ -115,15 +115,15 @@ namespace HouseSpotter.Scrapers
                     {
                         Debug.WriteLine($"[{DateTimeOffset.Now}] Trying PuppeteerSharp");
 
-                        if (!_scrapperClient.PuppeteerInitialized)
+                        if (!_scrapperClient.NetworkPuppeteerClient.PuppeteerInitialized)
                         {
-                            await _scrapperClient.InitializePupeeter();
-                            await _scrapperClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
+                            await _scrapperClient.NetworkPuppeteerClient.Initialize();
+                            await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
                             Thread.Sleep(125);
                         }
                         
-                        await _scrapperClient.PuppeteerPage!.GoToAsync(pageUrl);
-                        html = await _scrapperClient.PuppeteerPage!.GetContentAsync();
+                        await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GoToAsync(pageUrl);
+                        html = await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GetContentAsync();
                     }
                     catch(Exception ex)
                     {
