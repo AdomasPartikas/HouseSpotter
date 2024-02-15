@@ -31,32 +31,20 @@ namespace HouseSpotter.Scrapers
 
             try
             {
-
-                if (!_scraperClient.NetworkHttpClient.HtmlClientInitialized)
+                if (!_scraperClient.NetworkPuppeteerClient.PuppeteerInitialized)
                 {
-                    await _scraperClient.NetworkHttpClient.Initialize();
+                    await _scraperClient.NetworkPuppeteerClient.Initialize();
+                    await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
+                    Thread.Sleep(125);
                 }
-                html = await _scraperClient.NetworkHttpClient.HtmlClient!.GetStringAsync(url);
+
+                await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GoToAsync(url);
+                html = await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetContentAsync();
             }
-            catch (HttpRequestException e)
+            catch (Exception ex)
             {
-                try
-                {
-                    if (!_scraperClient.NetworkPuppeteerClient.PuppeteerInitialized)
-                    {
-                        await _scraperClient.NetworkPuppeteerClient.Initialize();
-                        await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
-                        Thread.Sleep(125);
-                    }
-
-                    await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GoToAsync(url);
-                    html = await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetContentAsync();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogCritical(ex, $"[{DateTimeOffset.Now}] Both HtmlClient and PuppeteerSharp failed to get {url}");
-                    return;
-                }
+                _logger.LogCritical(ex, $"[{DateTimeOffset.Now}] PuppeteerSharp failed to get {url}");
+                return;
             }
 
             doc.LoadHtml(html);
@@ -95,6 +83,11 @@ namespace HouseSpotter.Scrapers
             var abst = doc.DocumentNode.Descendants("div")
                 .Where(node => node.GetAttributeValue("class", "")
                 .Equals("object-info ")).ToList();
+
+            if (abst.Count == 0)
+                abst = doc.DocumentNode.Descendants("div")
+                    .Where(node => node.GetAttributeValue("class", "")
+                    .Equals("object-info with-rentdanger")).ToList();
 
             var descriptionList = abst[0].Descendants("dl").ToList();
             var descriptionTitle = descriptionList[0].Descendants("dt").ToList();
@@ -183,25 +176,33 @@ namespace HouseSpotter.Scrapers
                     case "Ypatybės":
                         {
 
-                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span").Select(x => x.InnerHtml.Trim()).ToList());
+                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span")
+                                .Where(node => node.GetAttributeValue("class", "")
+                                .Equals("special-comma")).Select(x => x.InnerHtml.Trim()).ToList());
                             house.Ypatybes = dscDefinition;
                         }
                         break;
                     case "Papildomos patalpos":
                         {
-                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span").Select(x => x.InnerHtml.Trim()).ToList());
+                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span")
+                                .Where(node => node.GetAttributeValue("class", "")
+                                .Equals("special-comma")).Select(x => x.InnerHtml.Trim()).ToList());
                             house.PapildomosPatalpos = dscDefinition;
                         }
                         break;
                     case "Papildoma įranga":
                         {
-                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span").Select(x => x.InnerHtml.Trim()).ToList());
+                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span")
+                                .Where(node => node.GetAttributeValue("class", "")
+                                .Equals("special-comma")).Select(x => x.InnerHtml.Trim()).ToList());
                             house.PapildomaIranga = dscDefinition;
                         }
                         break;
                     case "Apsauga":
                         {
-                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span").Select(x => x.InnerHtml.Trim()).ToList());
+                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span")
+                                .Where(node => node.GetAttributeValue("class", "")
+                                .Equals("special-comma")).Select(x => x.InnerHtml.Trim()).ToList());
                             house.Apsauga = dscDefinition;
                         }
                         break;
@@ -212,7 +213,7 @@ namespace HouseSpotter.Scrapers
                         break;
                     case "Iki vandens telkinio (m)":
                         {
-                            house.IkiTelkinio = Convert.ToInt32(dscDefinition);
+                            house.IkiTelkinio = Convert.ToInt32(dscDefinition.Replace("m", "").Replace(" ", ""));
                         }
                         break;
                     case "Unikalus daikto numeris (RC numeris)":
@@ -286,31 +287,20 @@ namespace HouseSpotter.Scrapers
 
                 try
                 {
-                    if (!_scraperClient.NetworkHttpClient.HtmlClientInitialized)
+                    if (!_scraperClient.NetworkPuppeteerClient.PuppeteerInitialized)
                     {
-                        await _scraperClient.NetworkHttpClient.Initialize();
+                        await _scraperClient.NetworkPuppeteerClient.Initialize();
+                        await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
+                        Thread.Sleep(125);
                     }
-                    html = await _scraperClient.NetworkHttpClient.HtmlClient.GetStringAsync(pageUrl);
-                }
-                catch (HttpRequestException e)
-                {
-                    try
-                    {
-                        if (!_scraperClient.NetworkPuppeteerClient.PuppeteerInitialized)
-                        {
-                            await _scraperClient.NetworkPuppeteerClient.Initialize();
-                            await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
-                            Thread.Sleep(125);
-                        }
 
-                        await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GoToAsync(pageUrl);
-                        html = await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetContentAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogCritical(ex, $"[{DateTimeOffset.Now}] Both HtmlClient and PuppeteerSharp failed to get {pageUrl}");
-                        return;
-                    }
+                    await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GoToAsync(pageUrl);
+                    html = await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetContentAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogCritical(ex, $"[{DateTimeOffset.Now}]PuppeteerSharp failed to get {pageUrl}");
+                    return;
                 }
 
                 doc = new HtmlDocument();
