@@ -46,6 +46,8 @@ namespace HouseSpotter.Utils
                 await NetworkPuppeteerClient.Destroy();
             }
             GC.Collect();
+            
+            Debug.WriteLine($"[{DateTimeOffset.Now}] Garbage collected");
         }
 
         public bool UsingSql = false;

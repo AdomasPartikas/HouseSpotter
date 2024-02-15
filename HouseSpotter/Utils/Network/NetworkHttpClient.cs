@@ -15,9 +15,12 @@ namespace HouseSpotter.Utils
         public async Task Initialize()
         {
             // Set up the browser for HtmlClient
-            HtmlClientHandler.UseProxy = false;
-            HtmlClientHandler.UseDefaultCredentials = true;
-            HtmlClientHandler.UseCookies = true;
+            HtmlClientHandler = new HttpClientHandler
+            {
+                UseProxy = false,
+                UseDefaultCredentials = true,
+                UseCookies = true
+            };
 
             HtmlClient = new HttpClient(HtmlClientHandler);
             ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13;
@@ -40,7 +43,7 @@ namespace HouseSpotter.Utils
             HtmlClientInitialized = true;
         }
         public bool HtmlClientInitialized = false;
-        public HttpClientHandler HtmlClientHandler = new HttpClientHandler();
-        public HttpClient HtmlClient = new HttpClient();
+        public HttpClientHandler? HtmlClientHandler;
+        public HttpClient? HtmlClient;
     }
 }

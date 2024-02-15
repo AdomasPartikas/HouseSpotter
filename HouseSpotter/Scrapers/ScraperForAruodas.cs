@@ -9,20 +9,20 @@ namespace HouseSpotter.Scrapers
     public class ScraperForAruodas
     {
         private Random random = new Random();
-        private ScraperClient _scrapperClient;
+        private ScraperClient _scraperClient;
         private ILogger<ScraperForAruodas> _logger;
         public ScraperForAruodas(ScraperClient scraperClient, ILogger<ScraperForAruodas> logger)
         {
-            _scrapperClient = scraperClient;
+            _scraperClient = scraperClient;
             _logger = logger;
         }
         ~ScraperForAruodas()
         {
-            _scrapperClient.EndScrape().Wait();
+            _scraperClient.EndScrape().Wait();
         }
-        public async Task GetHousingDetails(string url)
+        public async Task GetHousingDetails(string url, string bustoTipas)
         {
-            Thread.Sleep((int)_scrapperClient.SpeedLimit!); //Stopping to not get flagged as a robot
+            Thread.Sleep((int)_scraperClient.SpeedLimit!); //Stopping to not get flagged as a robot
 
             string html = "";
             var doc = new HtmlDocument();
@@ -31,35 +31,29 @@ namespace HouseSpotter.Scrapers
 
             try
             {
-                Debug.WriteLine($"[{DateTimeOffset.Now}] Trying HtmlClient");
 
-                if(!_scrapperClient.NetworkHttpClient.HtmlClientInitialized)
+                if (!_scraperClient.NetworkHttpClient.HtmlClientInitialized)
                 {
-                    await _scrapperClient.NetworkHttpClient.Initialize();
+                    await _scraperClient.NetworkHttpClient.Initialize();
                 }
-                html = await _scrapperClient.NetworkHttpClient.HtmlClient.GetStringAsync(url);
+                html = await _scraperClient.NetworkHttpClient.HtmlClient!.GetStringAsync(url);
             }
             catch (HttpRequestException e)
             {
-                Debug.WriteLine($"[{DateTimeOffset.Now}] HtmlClient failed");
-
                 try
                 {
-                    Debug.WriteLine($"[{DateTimeOffset.Now}] Trying PuppeteerSharp");
-
-                    if (!_scrapperClient.NetworkPuppeteerClient.PuppeteerInitialized)
+                    if (!_scraperClient.NetworkPuppeteerClient.PuppeteerInitialized)
                     {
-                        await _scrapperClient.NetworkPuppeteerClient.Initialize();
-                        await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
+                        await _scraperClient.NetworkPuppeteerClient.Initialize();
+                        await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
                         Thread.Sleep(125);
                     }
-                    
-                    await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GoToAsync(url);
-                    html = await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GetContentAsync();
+
+                    await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GoToAsync(url);
+                    html = await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetContentAsync();
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
-                    Debug.WriteLine($"[{DateTimeOffset.Now}] PuppeteerSharp failed");
                     _logger.LogCritical(ex, $"[{DateTimeOffset.Now}] Both HtmlClient and PuppeteerSharp failed to get {url}");
                     return;
                 }
@@ -70,14 +64,207 @@ namespace HouseSpotter.Scrapers
             var header = doc.DocumentNode.Descendants("div")
                    .Where(node => node.GetAttributeValue("class", "")
                     .Equals("advert-info-header")).ToList();
-            
-            var title = header[1].Descendants("h1").FirstOrDefault()!.InnerText.Trim();
-            var price = Convert.ToDouble(header[1].Descendants("span").FirstOrDefault()!.InnerText.TrimEnd('€').Trim().Replace(" ", ""));
+
+            string title = "N/A";
+            double price = 0;
+
+            if (header.Count == 1)
+            {
+                header = doc.DocumentNode.Descendants("div")
+                   .Where(node => node.GetAttributeValue("class", "")
+                    .Equals("advert-info-header  in-project ")).ToList();
+
+                title = header[0].Descendants("h1").FirstOrDefault()!.InnerText.Trim();
+                price = Convert.ToDouble(header[0].Descendants("span").FirstOrDefault()!.InnerText.TrimEnd('€').Trim().Replace(" ", ""));
+            }
+            else
+            {
+                title = header[1].Descendants("h1").FirstOrDefault()!.InnerText.Trim();
+                price = Convert.ToDouble(header[1].Descendants("span").FirstOrDefault()!.InnerText.TrimEnd('€').Trim().Replace(" ", ""));
+            }
 
             house.Link = url;
             house.Title = title;
             house.Kaina = price;
-            
+            house.BustoTipas = bustoTipas;
+            house.AnketosKodas = Regex.Match(url, @"\d{6,7}").Value;
+            house.Aprasymas = doc.DocumentNode.Descendants("div")
+                .Where(node => node.GetAttributeValue("id", "")
+                .Equals("collapsedText")).FirstOrDefault()!.InnerText;
+
+            var abst = doc.DocumentNode.Descendants("div")
+                .Where(node => node.GetAttributeValue("class", "")
+                .Equals("object-info ")).ToList();
+
+            var descriptionList = abst[0].Descendants("dl").ToList();
+            var descriptionTitle = descriptionList[0].Descendants("dt").ToList();
+            var descriptionDefinition = descriptionList[0].Descendants("dd").ToList();
+
+            for (int i = 0; i < descriptionTitle.Count; i++)
+            {
+                var dscTitle = descriptionTitle[i].InnerText;
+                var dscDefinition = descriptionDefinition[i].InnerText;
+
+                dscDefinition = Regex.Replace(dscDefinition, @"((?<=\p{Ll})\p{Lu})|((?!\A)\p{Lu}(?>\p{Ll}))", " $0");
+
+                switch (dscTitle)
+                {
+                    case "Kaina mėn.":
+                        {
+                            dscDefinition = Regex.Replace(dscDefinition, @"\s+", "");
+                            dscDefinition = Regex.Replace(dscDefinition, @"€", "");
+                            house.KainaMen = Convert.ToInt32(dscDefinition);
+                        }
+                        break;
+                    case "Namo numeris":
+                        {
+                            house.NamoNumeris = dscDefinition;
+                        }
+                        break;
+                    case "Buto numeris":
+                        {
+                            house.ButoNumeris = dscDefinition;
+                        }
+                        break;
+                    case "Kambarių sk.":
+                        {
+                            house.KambariuSk = Convert.ToInt32(dscDefinition);
+                        }
+                        break;
+                    case "Plotas":
+                        {
+                            dscDefinition = dscDefinition.Replace('²', ' ').Replace('m', ' ').Trim();
+                            house.Plotas = Convert.ToDouble(dscDefinition);
+                        }
+                        break;
+                    case "Aukštas":
+                        {
+                            house.Aukstas = Convert.ToInt32(dscDefinition);
+                        }
+                        break;
+                    case "Aukštų sk.":
+                        {
+                            house.AukstuSk = Convert.ToInt32(dscDefinition);
+                        }
+                        break;
+                    case "Metai":
+                        {
+                            if (Regex.IsMatch(dscDefinition, @"\d{4} renovacija"))
+                            {
+                                dscDefinition = Regex.Match(dscDefinition, @"\d{4} renovacija").Value;
+                                dscDefinition = Regex.Match(dscDefinition, @"\d{4}").Value;
+                                house.Metai = Convert.ToInt32(dscDefinition);
+                            }
+                            else
+                                house.Metai = Convert.ToInt32(dscDefinition);
+
+                        }
+                        break;
+                    case "Įrengimas":
+                        {
+                            house.Irengimas = dscDefinition;
+                        }
+                        break;
+                    case "Pastato tipas":
+                        {
+                            house.PastatoTipas = dscDefinition;
+                        }
+                        break;
+                    case "Šildymas":
+                        {
+                            house.Sildymas = dscDefinition;
+                        }
+                        break;
+                    case "Pastato energijos suvartojimo klasė":
+                        {
+                            house.PastatoEnergijosSuvartojimoKlase = dscDefinition;
+                        }
+                        break;
+                    case "Ypatybės":
+                        {
+
+                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span").Select(x => x.InnerHtml.Trim()).ToList());
+                            house.Ypatybes = dscDefinition;
+                        }
+                        break;
+                    case "Papildomos patalpos":
+                        {
+                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span").Select(x => x.InnerHtml.Trim()).ToList());
+                            house.PapildomosPatalpos = dscDefinition;
+                        }
+                        break;
+                    case "Papildoma įranga":
+                        {
+                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span").Select(x => x.InnerHtml.Trim()).ToList());
+                            house.PapildomaIranga = dscDefinition;
+                        }
+                        break;
+                    case "Apsauga":
+                        {
+                            dscDefinition = String.Join('/', descriptionDefinition[i].Descendants("span").Select(x => x.InnerHtml.Trim()).ToList());
+                            house.Apsauga = dscDefinition;
+                        }
+                        break;
+                    case "Vanduo":
+                        {
+                            house.Vanduo = dscDefinition;
+                        }
+                        break;
+                    case "Iki vandens telkinio (m)":
+                        {
+                            house.IkiTelkinio = Convert.ToInt32(dscDefinition);
+                        }
+                        break;
+                    case "Unikalus daikto numeris (RC numeris)":
+                        {
+                            house.RCNumeris = dscDefinition;
+                        }
+                        break;
+                    case "Namo tipas":
+                        {
+                            house.NamoTipas = dscDefinition;
+                        }
+                        break;
+                    case "Sklypo plotas":
+                        {
+                            house.SklypoPlotas = dscDefinition;
+                        }
+                        break;
+                    case "Artimiausias vandens telkinys":
+                        {
+                            house.ArtimiausiasTelkinys = dscDefinition;
+                        }
+                        break;
+                    default:
+                        {
+                            Debug.WriteLine($"Title not defined: {dscTitle}");
+                            Thread.Sleep(1000);
+                        }
+                        break;
+                }
+            }
+
+            Debug.WriteLine($"[{DateTimeOffset.Now}] {house.Title} - {house.Kaina}€");
+            Debug.WriteLine($"Anketos Kodas: {house.AnketosKodas}");
+            Debug.WriteLine($"Link'as: {house.Link}");
+            Debug.WriteLine($"Busto tipas: {house.BustoTipas}");
+            Debug.WriteLine($"Kaina: {house.Kaina.ToString()}");
+            Debug.WriteLine($"Kaina men.: {house.KainaMen.ToString()}");
+            Debug.WriteLine($"Namo numeris: {house.NamoNumeris}");
+            Debug.WriteLine($"Buto numeris: {house.ButoNumeris}");
+            Debug.WriteLine($"Kambariu sk: {house.KambariuSk.ToString()}");
+            Debug.WriteLine($"Plotas: {house.Plotas.ToString()}");
+            Debug.WriteLine($"Aukstas: {house.Aukstas.ToString()}");
+            Debug.WriteLine($"Aukstu sk.: {house.AukstuSk.ToString()}");
+            Debug.WriteLine($"Metai: {house.Metai.ToString()}");
+            Debug.WriteLine($"Irengimas: {house.Irengimas}");
+            Debug.WriteLine($"Pastato tipas: {house.PastatoTipas}");
+            Debug.WriteLine($"Sildymas: {house.Sildymas}");
+            Debug.WriteLine($"Energijos klase: {house.PastatoEnergijosSuvartojimoKlase}");
+            Debug.WriteLine($"Ypatybes: {house.Ypatybes}");
+            Debug.WriteLine($"Papildomos patalpos: {house.PapildomosPatalpos}");
+            Debug.WriteLine($"Papildoma iranga: {house.PapildomaIranga}");
+            Debug.WriteLine($"Apsauga: {house.Apsauga}");
         }
         public async Task FindHousing(string siteEndpoint)
         {
@@ -89,7 +276,7 @@ namespace HouseSpotter.Scrapers
 
             for (int i = 1; i <= pageCount; i++)
             {
-                Thread.Sleep((int)_scrapperClient.SpeedLimit!); //Stopping to not get flagged as a robot
+                Thread.Sleep((int)_scraperClient.SpeedLimit!); //Stopping to not get flagged as a robot
 
                 if (i > 1)
                     pageUrl = url + $"puslapis/{i}/";
@@ -99,35 +286,28 @@ namespace HouseSpotter.Scrapers
 
                 try
                 {
-                    Debug.WriteLine($"[{DateTimeOffset.Now}] Trying HtmlClient");
-
-                    if(!_scrapperClient.NetworkHttpClient.HtmlClientInitialized)
+                    if (!_scraperClient.NetworkHttpClient.HtmlClientInitialized)
                     {
-                        await _scrapperClient.NetworkHttpClient.Initialize();
+                        await _scraperClient.NetworkHttpClient.Initialize();
                     }
-                    html = await _scrapperClient.NetworkHttpClient.HtmlClient.GetStringAsync(pageUrl);
+                    html = await _scraperClient.NetworkHttpClient.HtmlClient.GetStringAsync(pageUrl);
                 }
                 catch (HttpRequestException e)
                 {
-                    Debug.WriteLine($"[{DateTimeOffset.Now}] HtmlClient failed");
-
                     try
                     {
-                        Debug.WriteLine($"[{DateTimeOffset.Now}] Trying PuppeteerSharp");
-
-                        if (!_scrapperClient.NetworkPuppeteerClient.PuppeteerInitialized)
+                        if (!_scraperClient.NetworkPuppeteerClient.PuppeteerInitialized)
                         {
-                            await _scrapperClient.NetworkPuppeteerClient.Initialize();
-                            await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
+                            await _scraperClient.NetworkPuppeteerClient.Initialize();
+                            await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetCookiesAsync("https://m.aruodas.lt/");
                             Thread.Sleep(125);
                         }
-                        
-                        await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GoToAsync(pageUrl);
-                        html = await _scrapperClient.NetworkPuppeteerClient.PuppeteerPage!.GetContentAsync();
+
+                        await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GoToAsync(pageUrl);
+                        html = await _scraperClient.NetworkPuppeteerClient.PuppeteerPage!.GetContentAsync();
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
-                        Debug.WriteLine($"[{DateTimeOffset.Now}] PuppeteerSharp failed");
                         _logger.LogCritical(ex, $"[{DateTimeOffset.Now}] Both HtmlClient and PuppeteerSharp failed to get {pageUrl}");
                         return;
                     }
@@ -138,22 +318,6 @@ namespace HouseSpotter.Scrapers
 
                 if (pageCount == 1)
                 {
-                    //    For www.aruodas.lt
-                    // var pageSelector = doc.DocumentNode.Descendants("a")
-                    //     .Where(node => node.GetAttributeValue("class", "")
-                    //     .Equals("page-bt")).ToList();
-
-                    // pageCount = pageSelector.Select(item =>
-                    // {
-                    //     var innerText = item.InnerText.Trim();
-                    //     if(Regex.IsMatch(innerText, @"^\d+$", RegexOptions.IgnoreCase))
-                    //         return int.Parse(innerText);
-                    //     else 
-                    //         return 0;
-                    // }).ToList().Max();
-
-                    // Debug.WriteLine($"[{DateTimeOffset.Now}] Found {pageCount} pages for {siteEndpoint}");
-
                     var pageSelect = doc.DocumentNode.Descendants("div")
                         .Where(node => node.GetAttributeValue("class", "")
                         .Equals("page-select-v2")).FirstOrDefault();
@@ -169,8 +333,6 @@ namespace HouseSpotter.Scrapers
 
                 var listOfSelections = abstractList[0].Descendants("li").ToList();
 
-                _scrapperClient.Queries += listOfSelections.Count();
-
                 foreach (var item in listOfSelections)
                 {
 
@@ -181,13 +343,22 @@ namespace HouseSpotter.Scrapers
 
                     if (tip != null)
                     {
-                        var text = "\nhttps://m.aruodas.lt/" + tip.GetAttributeValue("href", "");
-                        SaveResult(false, text);
-                        await GetHousingDetails(text); //For testing purposes
+                        var text = "https://m.aruodas.lt/" + tip.GetAttributeValue("href", "");
+
+                        try
+                        {
+                            SaveResult(false, text);
+                            await GetHousingDetails(text, siteEndpoint); //For testing purposes
+                            _scraperClient.Queries++;
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogError(e, $"[{DateTimeOffset.Now}] Error while getting details for {text}");
+                        }
                     }
                 }
 
-                Debug.WriteLine($"[{DateTimeOffset.Now}] <{i}/{pageCount}> Total queries made so far: {_scrapperClient.Queries} in /{siteEndpoint}/");
+                Debug.WriteLine($"[{DateTimeOffset.Now}] <{i}/{pageCount}> Total queries made so far: {_scraperClient.Queries} in /{siteEndpoint}/");
                 return; //For testing purposes
             }
         }
@@ -201,7 +372,7 @@ namespace HouseSpotter.Scrapers
             else
             {
                 var text = result as String;
-                if (_scrapperClient.UsingSql)
+                if (_scraperClient.UsingSql)
                 {
                     //EstablishSqlConnection() turbut
                     //Something something something.....
@@ -210,7 +381,6 @@ namespace HouseSpotter.Scrapers
                 else
                 {
                     //Debug.WriteLine($"[{DateTimeOffset.Now}] {text}");
-                    _scrapperClient.Queries++;
                 }
             }
         }

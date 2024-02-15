@@ -7,7 +7,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 builder.Services.AddSingleton<ScraperClient>();
+builder.Services.AddSingleton<InMemoryLoggerProvider>();
 builder.Services.AddScoped<ScraperForAruodas>();
+
+builder.Services.AddLogging(config =>
+{
+    config.ClearProviders();
+    config.AddProvider(builder.Services.BuildServiceProvider().GetRequiredService<InMemoryLoggerProvider>());
+});
 
 var app = builder.Build();
 
