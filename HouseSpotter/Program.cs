@@ -1,7 +1,20 @@
+using HouseSpotter.Scrapers;
+using HouseSpotter.Utils;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorPages();
+
+builder.Services.AddSingleton<ScraperClient>();
+builder.Services.AddSingleton<InMemoryLoggerProvider>();
+builder.Services.AddScoped<ScraperForAruodas>();
+
+builder.Services.AddLogging(config =>
+{
+    config.ClearProviders();
+    config.AddProvider(builder.Services.BuildServiceProvider().GetRequiredService<InMemoryLoggerProvider>());
+});
 
 var app = builder.Build();
 
@@ -23,3 +36,5 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 app.Run();
+
+

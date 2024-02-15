@@ -1,0 +1,10 @@
+﻿@page
+@model HouseSpotter.Pages.ScrapeModel
+@{
+    ViewData["Title"] = "Scrape";
+}
+<h2>Scrape</h2>
+<form method="post" asp-page-handler="FindHousing">
+    <button type="submit" name="action" value="FindHousing">Find Housing</button>
+</form>
+
