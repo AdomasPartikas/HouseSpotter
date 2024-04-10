@@ -1,0 +1,25 @@
+@import './abstracts/abstracts';
+@import './components/components';
+@import './layout/layout';
+@import './pages/pages';
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  background: $background;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 62.5%;
+}
+
+body {
+  
+}

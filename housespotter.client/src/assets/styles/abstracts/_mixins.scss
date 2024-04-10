@@ -1,0 +1,53 @@
+//? CENTER THINGS
+@mixin center($dir, $x, $y) {
+  display: flex;
+  @if ($dir != 0) {
+    flex-direction: $dir;
+  }
+  @if ($x != 0) {
+    justify-content: $x;
+  }
+  @if ($y != 0) {
+    align-items: $y;
+  }
+}
+
+//? GRID
+@mixin grid($gap, $col, $row) {
+  display: grid;
+  @if ($gap != 0) {
+    grid-gap: $gap;
+  }
+  @if ($col != 0) {
+    grid-template-columns: $col;
+  }
+  @if ($row != 0) {
+    grid-template-rows: $row;
+  }
+}
+
+//? MAX CONTENT
+@mixin max-content {
+  max-width: $max-content;
+  width: 100%;
+  margin: 0 auto;
+}
+
+//? BACKGROUND
+@mixin background($color, $url, $repeat, $position, $size) {
+  @if ($color != 0) {
+    background-color: $color;
+  }
+  @if ($url != 0) {
+    background-image: url('#{$url}');
+  }
+  @if ($repeat != 0) {
+    background-repeat: $repeat;
+  }
+  @if ($position != 0) {
+    background-position: $position;
+  }
+  @if ($size != 0) {
+    background-size: $size;
+  }
+}
