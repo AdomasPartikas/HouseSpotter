@@ -9,6 +9,11 @@ namespace HouseSpotter.Server.Models
         /// Gets or sets the ID of the housing.
         /// </summary>
         public int ID { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the Scrape of the housing.
+        /// </summary>
+        public ScrapedSite ScrapedSite { get; set; }
 
         /// <summary>
         /// Gets or sets the AnketosKodas of the housing.

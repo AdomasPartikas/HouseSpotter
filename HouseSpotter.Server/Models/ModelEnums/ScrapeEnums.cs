@@ -6,15 +6,11 @@ public enum ScrapeType
     /// <summary>
     /// Represents a recent scrape operation.
     /// </summary>
-    Recent,
+    Partial,
     /// <summary>
     /// Represents a full scrape operation.
     /// </summary>
-    Full,
-    /// <summary>
-    /// Represents a detailed scrape operation.
-    /// </summary>
-    Detailed
+    Full
 }
 /// <summary>
 /// Represents the status of a scrape operation.
@@ -22,17 +18,13 @@ public enum ScrapeType
 public enum ScrapeStatus
 {
     /// <summary>
-    /// Represents a successful scrape operation.
-    /// </summary>
-    Success,
-    /// <summary>
     /// Represents an ongoing scrape operation.
     /// </summary>
     Ongoing,
     /// <summary>
-    /// Represents a failed scrape operation.
+    /// Represents a completed scrape operation.
     /// </summary>
-    Failed
+    Completed
 }
 
 /// <summary>
@@ -56,4 +48,16 @@ public enum ScrapedSite
     /// Represents the Facebook site.
     /// </summary>
     Facebook
+}
+
+public enum ScrapeResult
+{
+    /// <summary>
+    /// Represents a successful scrape operation.
+    /// </summary>
+    Success,
+    /// <summary>
+    /// Represents a failed scrape operation.
+    /// </summary>
+    Failed
 }

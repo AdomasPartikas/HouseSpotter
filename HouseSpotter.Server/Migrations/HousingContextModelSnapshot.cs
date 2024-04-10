@@ -103,6 +103,9 @@ namespace HouseSpotter.Server.Migrations
                     b.Property<string>("RCNumeris")
                         .HasColumnType("longtext");
 
+                    b.Property<int>("ScrapedSite")
+                        .HasColumnType("int");
+
                     b.Property<string>("Sildymas")
                         .HasColumnType("longtext");
 
@@ -155,6 +158,9 @@ namespace HouseSpotter.Server.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<int?>("NewQueries")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ScrapeResult")
                         .HasColumnType("int");
 
                     b.Property<int>("ScrapeStatus")

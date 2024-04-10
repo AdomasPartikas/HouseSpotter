@@ -9,9 +9,9 @@ namespace HouseSpotter.Server.Context
         {
         }
 
-        public DbSet<Housing> Housing { get; set; }
-        public DbSet<User> User { get; set; }
-        public DbSet<Scrape> Scrape { get; set; }
+        public DbSet<Housing> Housings { get; set; }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Scrape> Scrapes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

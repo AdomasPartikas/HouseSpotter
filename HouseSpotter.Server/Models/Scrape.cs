@@ -11,6 +11,11 @@ namespace HouseSpotter.Server.Models
         public int ID { get; set; }
 
         /// <summary>
+        /// Gets or sets the result of the scrape.
+        /// </summary>
+        public ScrapeResult ScrapeResult { get; set; }
+
+        /// <summary>
         /// Gets or sets the type of the scrape.
         /// </summary>
         public ScrapeType ScrapeType { get; set; }
