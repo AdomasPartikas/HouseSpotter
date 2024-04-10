@@ -1,0 +1,40 @@
+.notification {
+  position: fixed;
+  bottom: 2rem;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+
+  .notification__content {
+    @include center(0, space-between, center);
+    padding: 1rem 2rem;
+    background-color: $green-light;
+    border-radius: 0.4rem;
+    color: $green;
+    font-size: 1.4rem;
+    font-weight: 500;
+    box-shadow: 0 0.4rem 1.6rem rgba(0, 0, 0, 0.3);
+  }
+
+  .notification__close {
+    @include background(0, 'close.svg', no-repeat, center, contain);
+    width: 2.2rem;
+    min-width: 2.2rem;
+    height: auto;
+    aspect-ratio: 1/1;
+    margin: 0 0 0 2rem;
+    filter: $filter-green;
+    cursor: pointer;
+  }
+
+  &.error {
+    .notification__content {
+      background-color: $red-light;
+      color: $red;
+    }
+
+    .notification__close {
+      filter: $filter-red;
+    }
+  }
+}

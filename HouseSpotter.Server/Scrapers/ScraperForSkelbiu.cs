@@ -266,9 +266,11 @@ namespace HouseSpotter.Server.Scrapers
                 }
             }
 
+            var result = await CompleteScrape(scrape, ScrapeResult.Success, "Scrape finished successfully");
+
             await EndScrape();
 
-            return await CompleteScrape(scrape, ScrapeResult.Success, "Scrape finished successfully"); ;
+            return result;
         }
 
         public override async Task<Scrape> ScrapeHousingPosts(string pageUrl, string siteEndpoint, Scrape scrape)
