@@ -17,6 +17,9 @@ namespace HouseSpotter.Server.Context
         {
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.SavedSearches);
+
             modelBuilder.Entity<Housing>().ToTable("Housing");
             modelBuilder.Entity<User>().ToTable("User");
             modelBuilder.Entity<Scrape>().ToTable("Scrape");
