@@ -21,6 +21,7 @@ namespace HouseSpotter.Server.Migrations
                 {
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    ScrapedSite = table.Column<int>(type: "int", nullable: false),
                     AnketosKodas = table.Column<string>(type: "longtext", nullable: true),
                     Nuotrauka = table.Column<string>(type: "longtext", nullable: true),
                     Link = table.Column<string>(type: "longtext", nullable: true),
@@ -65,6 +66,7 @@ namespace HouseSpotter.Server.Migrations
                 {
                     ID = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
+                    ScrapeResult = table.Column<int>(type: "int", nullable: false),
                     ScrapeType = table.Column<int>(type: "int", nullable: false),
                     ScrapeStatus = table.Column<int>(type: "int", nullable: false),
                     ScrapedSite = table.Column<int>(type: "int", nullable: false),

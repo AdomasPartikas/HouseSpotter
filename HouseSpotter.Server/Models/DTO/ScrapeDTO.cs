@@ -13,6 +13,11 @@ namespace HouseSpotter.Server.Models.DTO
         public int ID { get; set; }
 
         /// <summary>
+        /// Gets or sets the result of the scrape.
+        /// </summary>
+        public string? ScrapeResult { get; set; }
+
+        /// <summary>
         /// Gets or sets the type of the scrape.
         /// </summary>
         public string? ScrapeType { get; set; }

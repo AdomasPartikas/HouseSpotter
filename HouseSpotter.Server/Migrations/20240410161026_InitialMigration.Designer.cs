@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HouseSpotter.Server.Migrations
 {
     [DbContext(typeof(HousingContext))]
-    [Migration("20240410131901_InitialMigration")]
+    [Migration("20240410161026_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -106,6 +106,9 @@ namespace HouseSpotter.Server.Migrations
                     b.Property<string>("RCNumeris")
                         .HasColumnType("longtext");
 
+                    b.Property<int>("ScrapedSite")
+                        .HasColumnType("int");
+
                     b.Property<string>("Sildymas")
                         .HasColumnType("longtext");
 
@@ -158,6 +161,9 @@ namespace HouseSpotter.Server.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<int?>("NewQueries")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ScrapeResult")
                         .HasColumnType("int");
 
                     b.Property<int>("ScrapeStatus")
