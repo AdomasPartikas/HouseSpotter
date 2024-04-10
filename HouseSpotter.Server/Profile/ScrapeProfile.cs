@@ -2,7 +2,7 @@ using AutoMapper;
 using HouseSpotter.Server.Models;
 using HouseSpotter.Server.Models.DTO;
 
-namespace HouseSpotterInReact.Server.Profile
+namespace HouseSpotter.Server.Profile
 {
     /// <summary>
     /// Represents a profile for mapping between ScrapeDTO and Scrape objects.

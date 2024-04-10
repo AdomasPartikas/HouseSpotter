@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HouseSpotter.Server.Migrations
 {
     [DbContext(typeof(HousingContext))]
-    [Migration("20240410161026_InitialMigration")]
+    [Migration("20240410194125_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
