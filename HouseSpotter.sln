@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HouseSpotter.Server", "Hous
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "housespotter.client", "housespotter.client\housespotter.client.esproj", "{F93E0FDB-16C6-447D-B189-796CB3BC72C1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BC5F1481-6A44-4D49-B778-7D255C855C1B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HouseSpotter.Unit", "Tests\HouseSpotter.Unit\HouseSpotter.Unit.csproj", "{E4E0AB27-D605-4B69-9D00-BD96CFDE1CAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,11 +27,18 @@ Global
 		{F93E0FDB-16C6-447D-B189-796CB3BC72C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F93E0FDB-16C6-447D-B189-796CB3BC72C1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F93E0FDB-16C6-447D-B189-796CB3BC72C1}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{E4E0AB27-D605-4B69-9D00-BD96CFDE1CAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4E0AB27-D605-4B69-9D00-BD96CFDE1CAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4E0AB27-D605-4B69-9D00-BD96CFDE1CAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4E0AB27-D605-4B69-9D00-BD96CFDE1CAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0EBFC5D3-8971-416D-8D54-38CFB498C128}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E4E0AB27-D605-4B69-9D00-BD96CFDE1CAF} = {BC5F1481-6A44-4D49-B778-7D255C855C1B}
 	EndGlobalSection
 EndGlobal
