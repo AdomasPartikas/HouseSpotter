@@ -71,6 +71,9 @@ namespace HouseSpotter.Server.Controllers
             {
                 var result = await _housingContext.Users.Where(u => u.Username == user.Username && u.Password == user.Password).FirstOrDefaultAsync();
 
+                if (result == null)
+                    return NotFound("Given credentials are invalid.");
+
                 return Ok(result);
             }
             catch (Exception ex)
@@ -91,6 +94,16 @@ namespace HouseSpotter.Server.Controllers
         {
             try
             {
+                var existingUsername = await _housingContext.Users.Where(u => u.Username == body.Username).FirstOrDefaultAsync();
+                var existingEmail = await _housingContext.Users.Where(u => u.Email == body.Email).FirstOrDefaultAsync();
+
+                if(existingUsername != null)
+                    return BadRequest("Username already exists.");
+
+                if(existingEmail != null)
+                    return BadRequest("Email already exists.");
+
+
                 var user = new User
                 {
                     Username = body.Username,
@@ -138,7 +151,6 @@ namespace HouseSpotter.Server.Controllers
 
                 var housingIds = user.SavedSearches.Select(ss => ss.HousingID).ToList();
 
-                // Use the list of IDs to filter Housings
                 var result = await _housingContext.Housings
                     .Where(h => housingIds.Contains(h.ID))
                     .ToListAsync();
@@ -189,6 +201,44 @@ namespace HouseSpotter.Server.Controllers
                 }
 
                 user.SavedSearches.Add(new SavedSearch { HousingID = housingID });
+
+                await _housingContext.SaveChangesAsync();
+
+                return Ok(user);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"An error occurred: {ex.Message}" });
+            }
+        }
+
+        [HttpDelete("user/{id}/saveSearch/{housingID}")]
+        [ProducesResponseType<User>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> DeleteSearch(int id, int housingID)
+        {
+            try
+            {
+                var user = await _housingContext.Users.Where(u => u.ID == id).Include(u => u.SavedSearches).FirstOrDefaultAsync();
+
+                if (user == null)
+                {
+                    return NotFound("Given user ID does not exist.");
+                }
+
+                if(user.SavedSearches == null)
+                {
+                    return Ok(user);
+                }
+
+                var search = user.SavedSearches.FirstOrDefault(ss => ss.HousingID == housingID);
+
+                if(search == null)
+                {
+                    return Ok(user);
+                }
+
+                user.SavedSearches.Remove(search);
 
                 await _housingContext.SaveChangesAsync();
 

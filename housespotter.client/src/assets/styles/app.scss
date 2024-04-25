@@ -1,25 +1,31 @@
-@import './abstracts/abstracts';
-@import './components/components';
-@import './layout/layout';
-@import './pages/pages';
-
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  background: $background;
-}
-
-* {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-}
-
-html {
-  font-size: 62.5%;
-}
-
-body {
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
   
-}
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #f8f8f8;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  
+    .nav-item {
+      button {
+        padding: 10px 20px;
+        cursor: pointer;
+        border: none;
+        background-color: #e7e7e7;
+        border-radius: 4px;
+        &:hover {
+          background-color: darken(#e79f9f, 10%);
+        }
+      }
+  
+      &.login {
+        align-self: flex-end;
+      }
+    }
+  }
+  
