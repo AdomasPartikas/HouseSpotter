@@ -1,7 +1,9 @@
 using AutoMapper;
 using HouseSpotter.Server.Context;
+using HouseSpotter.Server.Extensions;
 using HouseSpotter.Server.Models;
 using HouseSpotter.Server.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,15 +12,17 @@ namespace HouseSpotter.Server.Controllers
     [ApiController]
     [Produces("application/json")]
     [Route("housespotter/db")]
-    public class DatabaseController(HousingContext housingContext, IMapper mapper) : ControllerBase
+    public class DatabaseController(HousingContext housingContext, IMapper mapper, JwtToken jwtToken) : ControllerBase
     {
         private readonly HousingContext _housingContext = housingContext;
         private readonly IMapper _mapper = mapper;
+        private readonly JwtToken _jwtToken = jwtToken;
 
         /// <summary>
         /// Gets all housing data from the database.
         /// </summary>
         /// <returns>The list of housing data.</returns>
+        [Authorize]
         [HttpGet("getallhousing")]
         [ProducesResponseType<Housing>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -40,6 +44,7 @@ namespace HouseSpotter.Server.Controllers
         /// Gets all housing data from the database.
         /// </summary>
         /// <returns>The list of housing data.</returns>
+        [Authorize]
         [HttpGet("getallusers")]
         [ProducesResponseType<List<User>>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -63,7 +68,7 @@ namespace HouseSpotter.Server.Controllers
         /// <param name="user">The user login information.</param>
         /// <returns>The logged in user.</returns>
         [HttpPost("user/login")]
-        [ProducesResponseType<User>(StatusCodes.Status200OK)]
+        [ProducesResponseType<UserLoginResponse>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> LoginUser([FromBody] UserLoginBody user)
         {
@@ -74,7 +79,8 @@ namespace HouseSpotter.Server.Controllers
                 if (result == null)
                     return NotFound("Given credentials are invalid.");
 
-                return Ok(result);
+                var token = _jwtToken.GenerateJwtToken(user.Username);
+                return Ok(new { Token = token, Username = user.Username });
             }
             catch (Exception ex)
             {
@@ -131,6 +137,7 @@ namespace HouseSpotter.Server.Controllers
         /// </summary>
         /// <param name="id">The user ID.</param>
         /// <returns>The list of saved searches.</returns>
+        [Authorize]
         [HttpGet("user/{id}/savedSearches")]
         [ProducesResponseType<List<Housing>>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -169,6 +176,7 @@ namespace HouseSpotter.Server.Controllers
         /// <param name="id">The user ID.</param>
         /// <param name="housingID">The search to save.</param>
         /// <returns>The result of the save operation.</returns>
+        [Authorize]
         [HttpPut("user/{id}/saveSearch/{housingID}")]
         [ProducesResponseType<User>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -212,6 +220,7 @@ namespace HouseSpotter.Server.Controllers
             }
         }
 
+        [Authorize]
         [HttpDelete("user/{id}/saveSearch/{housingID}")]
         [ProducesResponseType<User>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

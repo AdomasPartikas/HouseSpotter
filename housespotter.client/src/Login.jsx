@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import './assets/styles/Login.scss';
+import Cookies from 'js-cookie';
+import api from './net/api';
+import { useNotification } from './contexts/NotificationContext';
 
 function Login({ onRegister, onLoginSuccess }) {
+    const { notify } = useNotification();
     const [credentials, setCredentials] = useState({
         username: '',
         password: '',
@@ -19,12 +22,16 @@ function Login({ onRegister, onLoginSuccess }) {
     const handleLogin = async (event) => {
         event.preventDefault();
         try {
-            const response = await axios.post('/housespotter/db/user/login', credentials);
+            const response = await api.post('/housespotter/db/user/login', credentials);
             if (response.data) {
+                Cookies.set('jwt', response.data.token, { expires: 1 });
+                Cookies.set('username', response.data.username, { expires: 1 });
                 onLoginSuccess(response.data.username);
+                notify('Login successful', 'success');
             }
         } catch (error) {
             console.error('Login failed:', error);
+            notify('Login failed. Please try again.', 'error');
         }
     };
 

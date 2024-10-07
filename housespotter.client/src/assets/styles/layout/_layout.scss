@@ -1,0 +1,8 @@
+@import './products', './filters';
+
+.layout {
+  max-width: calc(120rem + 2 * $padding);
+  width: 100%;
+  padding: 0 $padding;
+  margin: 0 auto;
+}

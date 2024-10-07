@@ -1,6 +1,7 @@
 using AutoMapper;
 using HouseSpotter.Server.Models.DTO;
 using HouseSpotter.Server.Scrapers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HouseSpotter.Server.Controllers
@@ -13,6 +14,7 @@ namespace HouseSpotter.Server.Controllers
         private readonly ScraperForSkelbiu _scraperForSkelbiu = scraperForSkelbiu;
         private readonly IMapper _mapper = mapper;
 
+        [Authorize]
         [HttpPost("skelbiu/housing/{depth}")]
         [ProducesResponseType<ScrapeDTO>(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

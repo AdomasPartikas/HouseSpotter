@@ -58,6 +58,13 @@ namespace HouseSpotter.Server.Models.DTO
         public required string Password { get; set; }
     }
 
+    public class UserLoginResponse
+    {
+        public string Token { get; set; }
+        public string Username { get; set; }
+    }
+
+
     /// <summary>
     /// Represents the request body for user registration.
     /// </summary>
